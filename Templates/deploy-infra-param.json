@@ -2,10 +2,13 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {  
-        "virtualNetworkName": {            
-            "value": "vnet-dev-mmlhpc-10"
+        "location":{
+            "value": "westeurope"
+        },       
+        "vnet_name": {            
+            "value": "vnet-azcyclecloud-poc"
         },      
-        "addressSpaces": {
+        "vnet_addressSpace": {
             "value": [
                 "192.168.0.0/16" 
             ]                    
@@ -19,63 +22,52 @@
         "subnet_comp_addressRange": {
             "value": "192.168.8.0/21"
         },
-        "bastionName": { 
-            "value":"bast-dev-mmlhpc-10"
+        "bastion_name": { 
+            "value":"bast-azcyclecloud-poc"
         },
-        "publicIpAddressForBastion": {            
-            "value": "pip-dev-mmlhpc-bast-10"
+        "bastion_publicIP": {            
+            "value": "pubip-azcyclecloud-poc"
         }, 
         "nsg_snet_cycle_name": {
-            "value":"nsg-dev-snet-cycle"
+            "value":"nsg-azcyclecloud-poc-snet-cycle"
         },
         "nsg_snet_comp_name": {
-            "value": "nsg-dev-snet-compute"
+            "value": "nsg-azcyclecloud-poc-snet-compute"
         },
         "nsg_snetazurebastion_name": {
-            "value": "nsg-dev-snet-azurebastion"
+            "value": "nsg-azcyclecloud-poc-snet-azurebastion"
         },
         "nic_winos16_jump_name": {
-            "value": "nic-dev-mmlhpc-win16-jmphost-10"
-        },
-        "nic_centos_jump_name": {
-            "value": "nic-dev-mmlhpc-centos-jmphost-10"
-        },
+            "value": "nic-azcyclecloud-poc-win16-jmphost"
+        },       
         "nic_cyclecloud_name": {
-            "value": "nic-dev-mmlhpc-cyclecloud-10"
+            "value": "nic-azcyclecloud-poc-cyclecloud"
         },
-        "keyvault1_name": {
-            "value": "kv-dev-mmlhpc-10"
+        "keyvault_name": {
+            "value": "kv-azcyclecloud-poc"
         },  
         "vm_winos16_jump_name": {
-            "value": "vm-dev-mmlhpc-win16-jmp-10"
+            "value": "vm-azcyclecloud-poc-win16-jmp"
         },  
         "vm_winos16_jump_size":
         {
             "value": "Standard_D4s_v3"
-        },
-        "vm_centos_jump_name": {
-            "value": "vm-dev-mmlhpc-centos-jmp-10"
-        },        
-        "vm_centos_jump_size":
-        {
-            "value": "Standard_D4s_v3"
-        },        
-         "vm_cyclecloud_name": {
-            "value": "vm-dev-mmlhpc-cyclecloud-10"
+        },                
+        "vm_cyclecloud_name": {
+            "value": "vm-azcyclecloud-poc-cyclecloud-srv"
         },
         "vm_cyclecloud_size": 
         {
             "value": "Standard_DS3_v2" 
         },
         "st_data_name": {
-            "value":"stdevmmlhpcdata01"
+            "value":"stdata"
         },
         "st_cycle_name": {
-            "value": "stdevmmlhpccycle01"
+            "value": "stazccinst"
         },
         "loganaliticsws_name": {
-            "value":"log-dev-mmlhpc-10"
-        }
-        
+            "value":"log-azcyclecloud-poc"
+        }        
     }
 }

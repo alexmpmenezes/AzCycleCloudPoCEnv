@@ -3,21 +3,12 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
-            "type": "string",
-            "defaultValue": "westeurope"
-        },
-        "resourceGroup_opsservice_name": {
-            "type": "string",
-            "defaultValue": "realvaluecomesfrompipeline"            
-        },
-        "virtualNetworkName": {
             "type": "string"            
         },
-        "resourceGroup": {
-            "type": "string",
-            "defaultValue": "realvaluecomesfrompipeline"            
-        },
-        "addressSpaces": {
+        "vnet_name": {
+            "type": "string"            
+        },        
+        "vnet_addressSpace": {
             "type": "array"
         },       
         "subnet_cycle_name": {
@@ -34,13 +25,13 @@
         "subnet_comp_addressRange": {
             "type": "string"
         },            
-        "bastionName": {
+        "bastion_name": {
             "type": "string"            
         },
         "subnet_azbast_addressRange": {
             "type": "string"
         },
-        "publicIpAddressForBastion": {
+        "bastion_publicIP": {
             "type": "string"            
         },
         "nsg_snet_cycle_name": {
@@ -52,14 +43,11 @@
         "nsg_snetazurebastion_name": {
             "type": "string"            
         },
-        "keyvault1_name": {
+        "keyvault_name": {
             "type": "string"
         },              
         "nic_winos16_jump_name": {
             "type": "string"            
-        },
-        "nic_centos_jump_name": {
-            "type": "string"
         },
         "vm_winos16_jump_name": {
             "type": "string"
@@ -77,34 +65,8 @@
         },
         "vm_winos16_computer_adminuser": {
             "type": "secureString",
-            "defaultValue": "realvaluecomesfrompipeline"
-        },
-        "vm_winos16_computer_adminpass": {
-            "type": "secureString",
-            "defaultValue": "realvaluecomesfrompipeline"
-        },
-        "vm_centos_jump_name": {
-            "type": "string"
-        },
-        "vm_centos_jump_size": {
-            "type": "string"
-        },
-        "vm_centos_jump_osDiskSize": {
-            "type": "string",
-            "defaultValue": "StandardSSD_LRS"            
-        },
-        "vm_centos_computer_name": {
-            "type": "string",
-            "defaultValue": "MMLHPCJUMP02"
-        },
-        "vm_centos_computer_adminuser": {
-            "type": "securestring",
-            "defaultValue": "realvaluecomesfrompipeline"
-        },
-        "vm_centos_computer_adminpass": {
-            "type": "securestring",
-            "defaultValue": "realvaluecomesfrompipeline"
-        },
+            "defaultValue": "superuser"
+        },             
         "st_data_name": {
             "type": "string"
         },
@@ -139,12 +101,8 @@
         },
         "vm_cyclecloud_computer_adminuser": {
             "type": "securestring",
-            "defaultValue": "realvaluecomesfrompipeline"
-        },
-        "vm_cyclecloud_computer_adminpass": {
-            "type": "securestring",
-            "defaultValue": "realvaluecomesfrompipeline"
-        },
+            "defaultValue": "superuser"
+        },        
         "st_cycle_name": {
             "type": "string"
         },        
@@ -152,89 +110,30 @@
             "type": "string"
         }               
     },
-    "variables": {},
+    "variables": {
+        "rg_name":"[concat('rg_azcyclecloud_poc_', uniqueString('RgName'))]",
+        "st_cycle_name": "[concat(toLower(parameters('st_cycle_name')), uniqueString(variables('rg_name')))]",
+        "st_data_name": "[concat(toLower(parameters('st_data_name')), uniqueString(variables('rg_name')))]",
+        "vm_win16_adminpass":"[concat('P!_', uniqueString(variables('rg_name')))]",
+        "vm_cyclecloud_adminpass":"[concat('P!_', uniqueString(variables('rg_name')))]"
+    },
     "resources": [     
         {
-            "type": "Microsoft.Network/VirtualNetworks",
-            "name": "[parameters('virtualNetworkName')]",            
-            "apiVersion": "2019-09-01",
-            "location": "[parameters('location')]",
-            "tags": {},
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('nsg_snet_cycle_name'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('nsg_snet_comp_name'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('nsg_snetazurebastion_name'))]"
-            ],            
+            "type": "Microsoft.Resources/resourceGroups",
+            "name": "[variables('rg_name')]",            
+            "apiVersion": "2020-06-01",
+            "location": "[parameters('location')]",          
             "properties": {
-                "addressSpace": {
-                    "addressPrefixes": "[parameters('addressSpaces')]"                                      
-                },
-                "subnets": [
-                    {
-                        "name": "[parameters('subnet_cycle_name')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnet_cycle_addressRange')]",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsg_snet_cycle_name'))]"
-                            },
-                            "serviceEndpoints": [
-                                {
-                                    "service": "Microsoft.KeyVault",
-                                    "locations": [
-                                        "*"
-                                    ]
-                                },
-                                {
-                                    "service": "Microsoft.Storage",
-                                    "locations": [
-                                        "westeurope",
-                                        "northeurope"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "name": "[parameters('subnet_comp_name')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnet_comp_addressRange')]",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsg_snet_comp_name'))]"
-                            },
-                             "serviceEndpoints": [
-                                {
-                                    "service": "Microsoft.KeyVault",
-                                    "locations": [
-                                        "*"
-                                    ]
-                                },
-                                {
-                                    "service": "Microsoft.Storage",
-                                    "locations": [
-                                        "westeurope"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "name": "AzureBastionSubnet",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnet_azbast_addressRange')]",
-                             "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsg_snetazurebastion_name'))]"
-                            }
-                        }
-                    }
-                ],
-                "enableDdosProtection": false                
             }
-        },        
+        },
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2020-04-01",
             "name": "[parameters('nsg_snet_cycle_name')]",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/resourceGroups/', variables('rg_name'))]"
+            ],
             "properties": {                
             }
         },
@@ -243,6 +142,9 @@
             "apiVersion": "2020-04-01",
             "name": "[parameters('nsg_snet_comp_name')]",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/resourceGroups/', variables('rg_name'))]"
+            ],
             "properties": {                
             }
         },
@@ -251,6 +153,9 @@
             "apiVersion": "2020-04-01",
             "name": "[parameters('nsg_snetazurebastion_name')]",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/resourceGroups/', variables('rg_name'))]"
+            ],
             "properties": {
                 "securityRules": [
                     {
@@ -332,10 +237,90 @@
             }
         },
         {
+            "type": "Microsoft.Network/VirtualNetworks",
+            "name": "[parameters('vnet_name')]",            
+            "apiVersion": "2019-09-01",
+            "location": "[parameters('location')]",
+            "tags": {},
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('nsg_snet_cycle_name'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('nsg_snet_comp_name'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', parameters('nsg_snetazurebastion_name'))]"
+            ],            
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": "[parameters('vnet_addressSpace')]"                                      
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('subnet_cycle_name')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet_cycle_addressRange')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsg_snet_cycle_name'))]"
+                            },
+                            "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.KeyVault",
+                                    "locations": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "service": "Microsoft.Storage",
+                                    "locations": [
+                                        "westeurope",
+                                        "northeurope"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "[parameters('subnet_comp_name')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet_comp_addressRange')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsg_snet_comp_name'))]"
+                            },
+                             "serviceEndpoints": [
+                                {
+                                    "service": "Microsoft.KeyVault",
+                                    "locations": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "service": "Microsoft.Storage",
+                                    "locations": [
+                                        "westeurope"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "AzureBastionSubnet",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet_azbast_addressRange')]",
+                             "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsg_snetazurebastion_name'))]"
+                            }
+                        }
+                    }
+                ],
+                "enableDdosProtection": false                
+            }
+        },        
+        
+        {
             "type": "Microsoft.Network/publicIpAddresses",
             "apiVersion": "2019-02-01",
-            "name": "[parameters('publicIpAddressForBastion')]",
+            "name": "[parameters('bastion_publicIP')]",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/resourceGroups/', variables('rg_name'))]"
+            ],
             "sku": {
                 "name": "Standard"
             },
@@ -346,11 +331,11 @@
         {
             "type": "Microsoft.Network/bastionHosts",
             "apiVersion": "2019-04-01",
-            "name": "[parameters('bastionName')]",
+            "name": "[parameters('bastion_name')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId(parameters('resourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-                "[resourceId(parameters('resourceGroup'), 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressForBastion'))]"
+                "[resourceId(variables('rg_name'), 'Microsoft.Network/virtualNetworks', parameters('vnet_name'))]",
+                "[resourceId(variables('rg_name'), 'Microsoft.Network/publicIpAddresses', parameters('bastion_publicIP'))]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -358,10 +343,10 @@
                         "name": "IpConf",
                         "properties": {
                             "subnet": {
-                                "id": "[resourceId(parameters('resourceGroup'), 'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), 'AzureBastionSubnet')]"
+                                "id": "[resourceId(variables('rg_name'), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), 'AzureBastionSubnet')]"
                             },
                             "publicIPAddress": {
-                                "id": "[resourceId(parameters('resourceGroup'), 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressForBastion'))]"
+                                "id": "[resourceId(variables('rg_name'), 'Microsoft.Network/publicIpAddresses', parameters('bastion_publicIP'))]"
                             }
                         }
                     }
@@ -374,7 +359,7 @@
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Network/VirtualNetworks/', parameters('virtualNetworkName'))]"
+                "[concat('Microsoft.Network/VirtualNetworks/', parameters('vnet_name'))]"
             ], 
             "properties": {
                 "ipConfigurations": [
@@ -382,7 +367,7 @@
                         "name": "ipconfig1",
                         "properties": {
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnet_cycle_name'))]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), parameters('subnet_cycle_name'))]"
                             },
                             "privateIPAllocationMethod": "Dynamic"
                         }
@@ -427,7 +412,7 @@
                 "osProfile": {
                     "computerName": "[parameters('vm_winos16_computer_name')]",
                     "adminUsername": "[parameters('vm_winos16_computer_adminuser')]",
-                    "adminPassword": "[parameters('vm_winos16_computer_adminpass')]",
+                    "adminPassword": "[variables('vm_win16_adminpass')]",
                     "windowsConfiguration": {
                         "enableAutomaticUpdates": true,
                         "provisionVmAgent": true
@@ -449,108 +434,22 @@
                         "typeHandlerVersion": "1.0",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-                            "workspaceId": "[reference(resourceId(parameters('resourceGroup_opsservice_name') ,'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').customerId]"
+                            "workspaceId": "[reference(resourceId(variables('rg_name') ,'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').customerId]"
                         },
                         "protectedSettings": {
-                            "workspaceKey": "[listKeys(resourceId(parameters('resourceGroup_opsservice_name'),'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').primarySharedKey]"
+                            "workspaceKey": "[listKeys(resourceId(variables('rg_name'),'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').primarySharedKey]"
                         }
                     }
                 }
             ]
-        },
-        {
-            "type": "Microsoft.Network/networkInterfaces",
-            "name": "[parameters('nic_centos_jump_name')]",
-            "apiVersion": "2019-07-01",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Network/VirtualNetworks/', parameters('virtualNetworkName'))]"
-            ], 
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnet_cycle_name'))]"
-                            },
-                            "privateIPAllocationMethod": "Dynamic"
-                        }
-                    }
-                ],
-                "enableAcceleratedNetworking": true
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines",
-            "name": "[parameters('vm_centos_jump_name')]",
-            "apiVersion": "2019-07-01",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', parameters('nic_centos_jump_name'))]"
-            ],
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "[parameters('vm_centos_jump_size')]"
-                },
-                "storageProfile": {
-                    "osDisk": {
-                        "createOption": "fromImage",
-                        "managedDisk": {
-                            "storageAccountType": "[parameters('vm_centos_jump_osDiskSize')]"
-                        }
-                    },
-                    "imageReference": {
-                        "publisher": "OpenLogic",
-                        "offer": "CentOS",
-                        "sku": "7.5",
-                        "version": "latest"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('nic_centos_jump_name'))]"
-                        }
-                    ]
-                },
-                "osProfile": {
-                    "computerName": "[parameters('vm_centos_computer_name')]",
-                    "adminUsername": "[parameters('vm_centos_computer_adminuser')]",
-                    "adminPassword": "[parameters('vm_centos_computer_adminpass')]"                    
-                }
-            },
-            "resources":[
-                {
-                    "type": "extensions",
-                    "name": "OMSExtension",
-                    "apiVersion": "2019-07-01",
-                    "location": "[parameters('location')]",
-                    "dependsOn": [
-                        "[concat('Microsoft.Compute/virtualMachines/', parameters('vm_centos_jump_name'))]"
-                    ],
-                    "properties": {
-                        "publisher": "Microsoft.EnterpriseCloud.Monitoring",
-                        "type": "OmsAgentForLinux",
-                        "typeHandlerVersion": "1.13",
-                        "autoUpgradeMinorVersion": true,
-                        "settings": {
-                            "workspaceId": "[reference(resourceId(parameters('resourceGroup_opsservice_name'), 'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').customerId]"
-                        },
-                        "protectedSettings": {
-                            "workspaceKey": "[listKeys(resourceId(parameters('resourceGroup_opsservice_name'), 'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').primarySharedKey]"
-                        }
-                    }
-                }
-            ]
-        },        
+        },      
         {
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[parameters('nic_cyclecloud_name')]",
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Network/VirtualNetworks/', parameters('virtualNetworkName'))]"
+                "[concat('Microsoft.Network/VirtualNetworks/', parameters('vnet_name'))]"
             ], 
             "properties": {
                 "ipConfigurations": [
@@ -558,7 +457,7 @@
                         "name": "ipconfig1",
                         "properties": {
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnet_cycle_name'))]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), parameters('subnet_cycle_name'))]"
                             },
                             "privateIPAllocationMethod": "Dynamic"
                         }
@@ -624,7 +523,7 @@
                 "osProfile": {
                     "computerName": "[parameters('vm_cyclecloud_computer_name')]",
                     "adminUsername": "[parameters('vm_cyclecloud_computer_adminuser')]",
-                    "adminPassword": "[parameters('vm_cyclecloud_computer_adminpass')]"
+                    "adminPassword": "[variables('vm_cyclecloud_adminpass')]"
                 }                
             },
             "resources":[
@@ -642,10 +541,10 @@
                         "typeHandlerVersion": "1.13",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-                            "workspaceId": "[reference(resourceId(parameters('resourceGroup_opsservice_name'), 'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').customerId]"
+                            "workspaceId": "[reference(resourceId(variables('rg_name'), 'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').customerId]"
                         },
                         "protectedSettings": {
-                            "workspaceKey": "[listKeys(resourceId(parameters('resourceGroup_opsservice_name'), 'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').primarySharedKey]"
+                            "workspaceKey": "[listKeys(resourceId(variables('rg_name'), 'Microsoft.OperationalInsights/workspaces/', parameters('loganaliticsws_name')), '2020-03-01-preview').primarySharedKey]"
                         }
                     }
                 }
@@ -658,11 +557,11 @@
         },
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[parameters('st_cycle_name')]",
+            "name": "[variables('st_cycle_name')]",
             "apiVersion": "2019-06-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Network/VirtualNetworks/', parameters('virtualNetworkName'))]"
+                "[concat('Microsoft.Network/VirtualNetworks/', parameters('vnet_name'))]"
             ],
             "sku": {
                 "name":"Standard_LRS"
@@ -679,10 +578,10 @@
                     "ipRules": [],
                     "virtualNetworkRules": [
                         {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnet_cycle_name'))]"                        
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), parameters('subnet_cycle_name'))]"                        
                         },
                          {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnet_comp_name'))]"                        
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), parameters('subnet_comp_name'))]"                        
                         }
                     ]
                 }
@@ -690,11 +589,11 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults",
-            "name": "[parameters('keyvault1_name')]",            
+            "name": "[parameters('keyvault_name')]",            
             "apiVersion": "2018-02-14",
             "location": "[parameters('location')]",
             "dependsOn": [
-                 "[concat('Microsoft.Network/VirtualNetworks/', parameters('virtualNetworkName'))]"
+                 "[concat('Microsoft.Network/VirtualNetworks/', parameters('vnet_name'))]"
             ],                    
             "properties": {
                 "tenantId": "[subscription().tenantId]",
@@ -717,10 +616,10 @@
                     ],
                     "virtualNetworkRules":[
                         {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnet_cycle_name'))]"
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), parameters('subnet_cycle_name'))]"
                         },
                         {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnet_comp_name'))]"
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), parameters('subnet_comp_name'))]"
                         }
                     ]
                 }
@@ -728,11 +627,11 @@
         }, 
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyvault1_name'), '/vm-cycle-adminuser' )]",
+            "name": "[concat(parameters('keyvault_name'), '/vm-cycle-adminuser' )]",
             "apiVersion": "2018-02-14",
             "location": "[parameters('location')]",        
             "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault1_name'))]"
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault_name'))]"
             ],
             "properties": {
                 "value": "[parameters('vm_cyclecloud_computer_adminuser')]"
@@ -740,23 +639,23 @@
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyvault1_name'), '/vm-cycle-adminpass' )]",
+            "name": "[concat(parameters('keyvault_name'), '/vm-cycle-adminpass' )]",
             "apiVersion": "2018-02-14",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault1_name'))]"
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault_name'))]"
             ],         
             "properties": {
-                "value": "[parameters('vm_cyclecloud_computer_adminpass')]"
+                "value": "[variables('vm_cyclecloud_adminpass')]"
             }
         },
         {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyvault1_name'), '/vm-winos16jump-adminuser' )]",
+            "name": "[concat(parameters('keyvault_name'), '/vm-winos16jump-adminuser' )]",
             "apiVersion": "2018-02-14",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault1_name'))]"
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault_name'))]"
             ],            
             "properties": {
                 "value": "[parameters('vm_winos16_computer_adminuser')]"
@@ -764,47 +663,23 @@
         },
          {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyvault1_name'), '/vm-winos16jump-adminpass' )]",
+            "name": "[concat(parameters('keyvault_name'), '/vm-winos16jump-adminpass' )]",
             "apiVersion": "2018-02-14",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault1_name'))]"
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault_name'))]"
             ],             
             "properties": {
-                "value": "[parameters('vm_winos16_computer_adminpass')]"
-            }
-        },
-         {
-            "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyvault1_name'), '/vm-centosjump-adminuser' )]",
-            "apiVersion": "2018-02-14",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault1_name'))]"
-            ],          
-            "properties": {
-                "value": "[parameters('vm_centos_computer_adminuser')]"
-            }
-        },
-         {
-            "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyvault1_name'), '/vm-centosjump-adminpass' )]",
-            "apiVersion": "2018-02-14",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyvault1_name'))]"
-            ],             
-            "properties": {
-                "value": "[parameters('vm_centos_computer_adminpass')]"
+                "value": "[variables('vm_win16_adminpass')]"
             }
         },
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[parameters('st_data_name')]",
+            "name": "[variables('st_data_name')]",
             "apiVersion": "2019-06-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Network/VirtualNetworks/', parameters('virtualNetworkName'))]"
+                "[concat('Microsoft.Network/VirtualNetworks/', parameters('vnet_name'))]"
             ],
             "sku": {
                 "name":"Standard_LRS"
@@ -826,32 +701,48 @@
                     ],
                     "virtualNetworkRules": [
                         {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnet_comp_name'))]"                        
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), parameters('subnet_cycle_name'))]"                        
+                        },
+                         {
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), parameters('subnet_comp_name'))]"                        
                         }
                     ]
                 }
             }
-        },        
+        },
         {
-            "type": "microsoft.storage/storageaccounts/blobServices",
-            "apiVersion": "2019-06-01",
-            "name":"[concat(parameters('st_data_name'), '/default')]",
-            "properties": {
-                "deleteRetentionPolicy": {
-                    "enabled": true,
-                    "days": 30
-                },
-                "isVersioningEnabled": true
-            },
+            "type": "Microsoft.OperationalInsights/workspaces",            
+            "name": "[parameters('loganaliticsws_name')]",
+            "apiVersion": "2020-03-01-preview",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('microsoft.storage/storageaccounts/', parameters('st_data_name'))]"
-            ]
-        }           
+                "[concat('Microsoft.Resources/resourceGroups/', variables('rg_name'))]"
+            ],
+            "properties": {
+                "sku": {
+                    "name": "pergb2018"
+                },
+            "retentionInDays": 90
+            }
+        }
+
     ],
-    "outputs": {
-        "KeyVaultName": {
+    "outputs": {    
+        "Win16 VM admin username": {
             "type": "string",
-            "value": "[parameters('keyvault1_name')]"
+            "value": "[ parameters('vm_winos16_computer_adminuser')]"
+        },
+        "Win16 VM admin pass": {
+            "type": "string",
+            "value": "[variables('vm_win16_adminpass')]"
+        }, 
+        "CycleCloud VM admin username": {
+            "type": "string",
+            "value": "[ parameters('vm_cyclecloud_computer_adminuser')]"
+        },
+        "CycleCloud VM admin pass": {
+            "type": "string",
+            "value": "[variables('vm_cyclecloud_adminpass')]"
         }
     }
 }

@@ -1,0 +1,81 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {  
+        "virtualNetworkName": {            
+            "value": "vnet-dev-mmlhpc-10"
+        },      
+        "addressSpaces": {
+            "value": [
+                "192.168.0.0/16" 
+            ]                    
+        },  
+        "subnet_azbast_addressRange": {
+            "value": "192.168.0.0/27"
+        },         
+        "subnet_cycle_addressRange": {
+            "value": "192.168.0.32/27"
+        },        
+        "subnet_comp_addressRange": {
+            "value": "192.168.8.0/21"
+        },
+        "bastionName": { 
+            "value":"bast-dev-mmlhpc-10"
+        },
+        "publicIpAddressForBastion": {            
+            "value": "pip-dev-mmlhpc-bast-10"
+        }, 
+        "nsg_snet_cycle_name": {
+            "value":"nsg-dev-snet-cycle"
+        },
+        "nsg_snet_comp_name": {
+            "value": "nsg-dev-snet-compute"
+        },
+        "nsg_snetazurebastion_name": {
+            "value": "nsg-dev-snet-azurebastion"
+        },
+        "nic_winos16_jump_name": {
+            "value": "nic-dev-mmlhpc-win16-jmphost-10"
+        },
+        "nic_centos_jump_name": {
+            "value": "nic-dev-mmlhpc-centos-jmphost-10"
+        },
+        "nic_cyclecloud_name": {
+            "value": "nic-dev-mmlhpc-cyclecloud-10"
+        },
+        "keyvault1_name": {
+            "value": "kv-dev-mmlhpc-10"
+        },  
+        "vm_winos16_jump_name": {
+            "value": "vm-dev-mmlhpc-win16-jmp-10"
+        },  
+        "vm_winos16_jump_size":
+        {
+            "value": "Standard_D4s_v3"
+        },
+        "vm_centos_jump_name": {
+            "value": "vm-dev-mmlhpc-centos-jmp-10"
+        },        
+        "vm_centos_jump_size":
+        {
+            "value": "Standard_D4s_v3"
+        },        
+         "vm_cyclecloud_name": {
+            "value": "vm-dev-mmlhpc-cyclecloud-10"
+        },
+        "vm_cyclecloud_size": 
+        {
+            "value": "Standard_DS3_v2" 
+        },
+        "st_data_name": {
+            "value":"stdevmmlhpcdata01"
+        },
+        "st_cycle_name": {
+            "value": "stdevmmlhpccycle01"
+        },
+        "loganaliticsws_name": {
+            "value":"log-dev-mmlhpc-10"
+        }
+        
+    }
+}
